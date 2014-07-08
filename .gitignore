@@ -1,0 +1,14 @@
+__pycache__
+build
+dist
+*.egg-info
+*pyc
+*.log
+*.substvars
+*.debhelper
+*.pybuild
+debian/files
+debian/macumba/
+*.swp
+# the dependencies deb
+*.deb
