@@ -10,8 +10,8 @@ Build-Depends: debhelper (>= 9),
                python3-coverage,
                python3-mock,
                python3-nose,
-               python3-setuptools,
                python3-requests,
+               python3-setuptools,
                python3-ws4py,
                python3-yaml
 Standards-Version: 3.9.5
@@ -22,16 +22,15 @@ Vcs-Git: git://github.com/Ubuntu-Solutions-Engineering/macumba.git
 
 Package: python3-macumba
 Architecture: all
-Depends: python3-all,
+Depends: juju-core,
+         python3-all,
          python3-mock,
          python3-nose,
-         python3-setuptools,
          python3-requests,
+         python3-setuptools,
          python3-ws4py,
          python3-yaml,
-         juju-core,
          ${misc:Depends},
-         ${python3:Depends},
-         ${python:Depends}
+         ${python3:Depends}
 Description: Macumba
  Python 3 bindings for Juju

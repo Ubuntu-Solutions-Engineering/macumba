@@ -8,6 +8,7 @@ dist
 *.debhelper
 *.pybuild
 debian/files
+debian/python3-macumba/
 debian/macumba/
 *.swp
 # the dependencies deb
