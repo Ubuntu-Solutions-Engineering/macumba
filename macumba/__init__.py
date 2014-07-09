@@ -85,7 +85,7 @@ class JujuClient:
         self.conn.close()
 
     def receive(self):
-        return self.conn.receive()
+        return self.conn.receive()['Response']
 
     def call(self, params):
         """ Get json data from juju api daemon
