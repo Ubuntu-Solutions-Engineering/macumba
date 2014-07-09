@@ -160,28 +160,6 @@ class JujuClient:
                               Request="EnvironmentSet",
                               Params=dict(Config=config)))
 
-    # def add_machine(self, constraints=None):
-    #     """ Allocate new machine
-    #
-    #     :param dict constraints: (optional) machine parameters
-    #     :returns: True on success, False on fail
-    #     :rtype: bool
-    #     """
-    #     cmd = "juju add-machine"
-    #     opts = []
-    #     if constraints:
-    #         log.debug("Setting machine constraints: "
-    #                   "({constraints}), ".format(constraints=constraints))
-    #         for k, v in constraints.items():
-    #             opts.append("{k}={v}".format(k=k, v=v))
-    #         if opts:
-    #             cmd = ("{cmd} --constraints \"{opts}\"".format(
-    #                 cmd=cmd, opts=" ".join(opts)))
-    #     cmd_ = get_command_output(cmd)
-    #     log.debug("Machine added: {cmd} ({out})".format(cmd=cmd,
-    #                                                     out=cmd_['stdout']))
-    #     return cmd_['stdout']
-
     def add_machine(self, series="", constraints=None,
                     machine_spec="", parent_id="", container_type=""):
 
@@ -265,64 +243,12 @@ class JujuClient:
                               Request="ServiceDeploy",
                               Params=dict(opts)))
 
-    # def deploy(self, charm, settings):
-    #     """ Deploy a charm to an instance
-    #
-    #     :param str charm: charm to deploy
-    #     :param str machine_id: (optional) machine id
-    #     :param str instances: (optional) number of instances to deploy
-    #     :param dict constraints: (optional) machine constraints
-    #     """
-    #     cmd = "juju deploy"
-    #     if 'machine_id' in settings and settings['machine_id']:
-    #         cmd += " --to {mid}".format(mid=settings['machine_id'])
-    #
-    #     if 'instances' in settings:
-    #         cmd += " -n {instances}".format(instances=settings['instances'])
-    #
-    #     if 'configfile' in settings:
-    #         cmd += " --config {file}".format(file=settings['configfile'])
-    #
-    #     if 'constraints' in settings:
-    #         opts = []
-    #         for k, v in settings['constraints'].items():
-    #             opts.append("{k}={v}".format(k=k, v=v))
-    #         if opts:
-    #             cmd += " --constraints \"{opts}\"".format(
-    #                                                 opts=" ".join(opts))
-    #
-    #     cmd += " {charm}".format(charm=charm)
-    #     log.debug("Deploying {charm} -> {cmd}".format(charm=charm, cmd=cmd))
-    #
-    #     cmd_ = get_command_output(cmd)
-    #     log.debug("Deploy result: {out}".format(out=cmd_['stdout']))
-    #     if cmd_['ret']:
-    #         log.warning("Deploy error ({cmd}): "
-    #                     "{out}".format(cmd=cmd, out=cmd_['stdout']))
-
     def set_config(self, service_name, config_keys):
         """ Sets machine config """
         return self.call(dict(Type="Client",
                               Request="ServiceSet",
                               Params=dict(ServiceName=service_name,
                                           Options=config_keys)))
-
-    # def set_config(self, service_name, config_keys):
-    #     """ Set configuration item on service
-    #
-    #     :param str service_name: name of service/charm
-    #     :param dict config_keys: config parameters in the
-    #                              form of { 'key' : 'value' }
-    #     """
-    #     log.debug("Setting config variables for "
-    #               "{name}".format(name=service_name))
-    #     for k, v in config_keys.items():
-    #         cmd = "juju set {service} {k}={v}".format(service=service_name,
-    #                                                   k=k, v=v)
-    #         cmd_ = get_command_output(cmd)
-    #         if cmd_['ret']:
-    #             log.warning("Problem setting config: "
-    #                         "{out}".format(out=cmd_['stdout']))
 
     def unset_config(self, service_name, config_keys):
         """ Unsets machine config """
@@ -362,16 +288,16 @@ class JujuClient:
                               Params=dict(ServiceName=service_name,
                                           Constraints=constraints)))
 
-    # def update_service(self, service_name, charm_url, force_charm_url=0,
-    #                    min_units=1, settings={}, constraints={}):
-    #     """ Update service """
-    #     return self.call(dict(Type="Client",
-    #                           Request="SetServiceConstraints",
-    #                           Params=dict(ServiceName=service_name,
-    #                                       CharmUrl=charm_url,
-    #                                       MinUnits=min_units,
-    #                                       SettingsStrings=settings,
-    #                                       Constraints=constraints)))
+    def update_service(self, service_name, charm_url, force_charm_url=0,
+                       min_units=1, settings={}, constraints={}):
+        """ Update service """
+        return self.call(dict(Type="Client",
+                              Request="SetServiceConstraints",
+                              Params=dict(ServiceName=service_name,
+                                          CharmUrl=charm_url,
+                                          MinUnits=min_units,
+                                          SettingsStrings=settings,
+                                          Constraints=constraints)))
 
     def destroy_service(self, service_name):
         """ Destroy a service """
@@ -411,26 +337,6 @@ class JujuClient:
                               Params=dict(ServiceName=service_name,
                                           ToMachineSpec=machine_spec,
                                           NumUnit=count)))
-
-    # def add_unit(self, service_name, machine_id=None, count=1):
-    #     """ Add unit to machine
-    #
-    #     :param str service_name: service/charm name
-    #     :param str machine_id: machine id
-    #     :param int count: number of units to add
-    #     """
-    #     cmd = "juju add-unit {name}".format(name=service_name)
-    #     if machine_id:
-    #         cmd = "{cmd} --to {_id}".format(cmd=cmd, _id=machine_id)
-    #     if count > 1:
-    #         cmd += " -n {count}".format(count=count)
-    #     log.debug("Adding additional {name}, cmd='{cmd}'".format(
-    #         name=service_name, cmd=cmd))
-    #     cmd_ = get_command_output(cmd)
-    #     if cmd_['ret']:
-    #         log.warning("Problem adding {name} "
-    #                     "{out}".format(name=service_name,
-    #                                    out=cmd_['stdout']))
 
     def remove_unit(self, unit_names):
         """ Removes unit """
