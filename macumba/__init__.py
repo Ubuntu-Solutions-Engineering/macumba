@@ -45,8 +45,8 @@ def query_cs(charm, series='trusty'):
 
 
 class JujuWS(WebSocketClient):
-    def __init__(self, url, password, protocols=['https-only'], extensions=None,
-                 ssl_options=None, headers=None):
+    def __init__(self, url, password, protocols=['https-only'],
+                 extensions=None, ssl_options=None, headers=None):
         WebSocketClient.__init__(self, url, protocols, extensions,
                                  ssl_options=ssl_options, headers=headers)
         self.messages = Queue()
