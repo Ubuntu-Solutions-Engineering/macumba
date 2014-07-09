@@ -20,7 +20,7 @@ import time
 import logging
 import requests
 from os import path
-
+from queue import Queue
 
 log = logging.getLogger('macumba')
 
@@ -45,33 +45,47 @@ def query_cs(charm, series='trusty'):
 
 
 class JujuWS(WebSocketClient):
+    def __init__(self, url, password, protocols=['https-only'], extensions=None,
+                 ssl_options=None, headers=None):
+        WebSocketClient.__init__(self, url, protocols, extensions,
+                                 ssl_options=ssl_options, headers=headers)
+        self.messages = Queue()
+
     def opened(self):
-        print(creds)
+        log.debug('Opened {}'.format(creds))
         self.send(json.dumps(creds))
 
     def received_message(self, m):
-        print(m)
-        json.loads(m.data.decode('utf-8'))
+        self.messages.put(json.loads(m.data.decode('utf-8')))
+
+    def closed(self, code, reason=None):
+        self.messages.task_done()
+
+    def receive(self):
+        if self.terminated and self.messages.empty():
+            return None
+        message = self.messages.get()
+        if message is StopIteration:
+            return None
+        return message
 
 
 class JujuClient:
-    """ Juju client class """
-
-    def __init__(self, url='wss://localhost:17070/', password=None):
-        "Constructor. url param is a websocket url"
-        self.url = url
+    def __init__(self, url='wss://localhost:17070', password='pass'):
+        self.conn = JujuWS(url, password)
         self._request_id = 1
         creds['Params']['Password'] = password
-        self.conn = JujuWS(self.url, protocols=['https-only'])
-        self.conn.daemon = False
+
+    def login(self):
         self.conn.connect()
-        # needs to sleep for initial opening of connection
-        time.sleep(1)
-        self.is_connected = True
+        self.conn.receive()
 
     def close(self):
         """ Closes connection to juju websocket """
         self.conn.close()
+
+    def receive(self):
+        return self.conn.receive()
 
     def call(self, params):
         """ Get json data from juju api daemon
@@ -85,13 +99,14 @@ class JujuClient:
 
     def info(self):
         """ Returns Juju environment state """
-        return self.call(dict(Type="Client",
-                              Request="EnvironmentInfo"))
+        self.call(dict(Type="Client",
+                       Request="EnvironmentInfo"))
 
+    @property
     def status(self):
         """ Returns status of juju environment """
-        return self.call(dict(Type="Client",
-                              Request="FullStatus"))
+        self.call(dict(Type="Client",
+                       Request="FullStatus"))
 
     def add_charm(self, charm_url):
         """ Adds charm """
