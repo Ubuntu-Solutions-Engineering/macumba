@@ -16,7 +16,6 @@
 
 from ws4py.client.threadedclient import WebSocketClient
 import json
-import time
 import logging
 import requests
 from os import path
@@ -42,6 +41,12 @@ def query_cs(charm, series='trusty'):
     url = path.join(charm_store_url, series, charm)
     r = requests.get(url)
     return r.json()
+
+
+class Jobs:
+    HostUnits = "JobHostUnits"
+    ManageEnviron = "JobManageEnviron"
+    ManageState = "JobManageState"
 
 
 class JujuWS(WebSocketClient):
@@ -75,6 +80,18 @@ class JujuClient:
         self.conn = JujuWS(url, password)
         self._request_id = 1
         creds['Params']['Password'] = password
+
+    def _prepare_strparams(self, d):
+        r = {}
+        for k, v in d.items():
+            r[k] = str(v)
+        return r
+
+    def _prepare_constraints(self, constraints):
+        for k in ['cpu-cores', 'cpu-power', 'mem']:
+            if constraints.get(k):
+                constraints[k] = int(constraints[k])
+        return constraints
 
     def login(self):
         self.conn.connect()
@@ -164,11 +181,37 @@ class JujuClient:
     #                                                     out=cmd_['stdout']))
     #     return cmd_['stdout']
 
-    # def add_machines(self, machines):
-    #     """ Add machines """
-    #     return self.call(dict(Type="Client",
-    #                           Request="AddMachines",
-    #                           Params=dict(MachineParams=machines)))
+    def add_machine(self, series="", constraints=None,
+                    machine_spec="", parent_id="", container_type=""):
+
+        """Allocate a new machine from the iaas provider.
+        """
+        if machine_spec:
+            err_msg = "Cant specify machine spec with container_type/parent_id"
+            assert not (parent_id or container_type), err_msg
+            parent_id, container_type = machine_spec.split(":", 1)
+
+        params = dict(
+            Series=series,
+            Constraints=self._prepare_constraints(constraints),
+            ContainerType=container_type,
+            ParentId=parent_id,
+            Jobs=[Jobs.HostUnits])
+        return self.add_machines([params])['Machines'][0]
+
+    def add_machines(self, machines):
+        """ Add machines """
+        self.call(dict(Type="Client",
+                       Request="AddMachines",
+                       Params=dict(MachineParams=machines)))
+
+    def destroy_machines(self, machine_ids, force=False):
+        params = {"MachineNames": machine_ids}
+        if force:
+            params["Force"] = True
+        self.call(dict(Type="Client",
+                       Request="DestroyMachines",
+                       Params=params))
 
     def add_relation(self, endpoint_a, endpoint_b):
         """ Adds relation between units """
