@@ -61,6 +61,7 @@ class JujuWS(WebSocketClient):
         self.send(json.dumps(creds))
 
     def received_message(self, m):
+        log.debug(m.data)
         self.messages.put(json.loads(m.data.decode('utf-8')))
 
     def closed(self, code, reason=None):
@@ -90,7 +91,7 @@ class JujuClient:
     def _prepare_constraints(self, constraints):
         for k in ['cpu-cores', 'cpu-power', 'mem']:
             if constraints.get(k):
-                constraints[k] = int(constraints[k])
+                constraints[k] = constraints[k]
         return constraints
 
     def login(self):
@@ -176,7 +177,8 @@ class JujuClient:
             ContainerType=container_type,
             ParentId=parent_id,
             Jobs=[Jobs.HostUnits])
-        return self.add_machines([params])['Machines'][0]
+        log.debug("Adding machine: {}".format(params))
+        return self.add_machines([params])
 
     def add_machines(self, machines):
         """ Add machines """
