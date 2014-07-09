@@ -113,6 +113,7 @@ class JujuClient:
         self._request_id = self._request_id + 1
         params['RequestId'] = self._request_id
         self.conn.send(json.dumps(params))
+        return self.receive()
 
     def info(self):
         """ Returns Juju environment state """
@@ -122,8 +123,8 @@ class JujuClient:
     @property
     def status(self):
         """ Returns status of juju environment """
-        self.call(dict(Type="Client",
-                       Request="FullStatus"))
+        return self.call(dict(Type="Client",
+                         Request="FullStatus"))
 
     def add_charm(self, charm_url):
         """ Adds charm """
@@ -201,17 +202,17 @@ class JujuClient:
 
     def add_machines(self, machines):
         """ Add machines """
-        self.call(dict(Type="Client",
-                       Request="AddMachines",
-                       Params=dict(MachineParams=machines)))
+        return self.call(dict(Type="Client",
+                         Request="AddMachines",
+                         Params=dict(MachineParams=machines)))
 
     def destroy_machines(self, machine_ids, force=False):
         params = {"MachineNames": machine_ids}
         if force:
             params["Force"] = True
-        self.call(dict(Type="Client",
-                       Request="DestroyMachines",
-                       Params=params))
+        return self.call(dict(Type="Client",
+                              Request="DestroyMachines",
+                              Params=params))
 
     def add_relation(self, endpoint_a, endpoint_b):
         """ Adds relation between units """
@@ -238,8 +239,6 @@ class JujuClient:
 
         if 'machine_id' in settings:
             opts['ToMachineSpec'] = settings['machine_id']
-        else:
-            opts['ToMachineSpec'] = None
 
         if 'charm_url' in settings:
             opts['CharmUrl'] = settings['charm_url']
@@ -249,6 +248,8 @@ class JujuClient:
 
         if 'instances' in settings:
             opts['NumUnits'] = settings['instances']
+        else:
+            opts['NumUnits'] = 1
 
         if 'configfile' in settings:
             opts['ConfigYAML'] = settings['configfile']
