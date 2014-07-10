@@ -103,7 +103,8 @@ class JujuClient:
         self.conn.close()
 
     def receive(self):
-        return self.conn.receive()['Response']
+        res = self.conn.receive()
+        return res['Response']
 
     def call(self, params):
         """ Get json data from juju api daemon
@@ -161,7 +162,7 @@ class JujuClient:
                               Request="EnvironmentSet",
                               Params=dict(Config=config)))
 
-    def add_machine(self, series="", constraints=None,
+    def add_machine(self, series="", constraints={},
                     machine_spec="", parent_id="", container_type=""):
 
         """Allocate a new machine from the iaas provider.
@@ -214,25 +215,24 @@ class JujuClient:
         :param str service_name: name of service
         :param dict settings: (optional) deploy settings
         """
-        opts = {}
-        opts['ServiceName'] = service_name
+        settings['ServiceName'] = service_name
 
-        if 'charm_url' in settings:
-            opts['CharmUrl'] = settings['charm_url']
-        else:
+        if not 'NumUnits' in settings:
+            settings['NumUnits'] = 1
+
+        if not 'CharmUrl' in settings:
             _url = query_cs(service_name)
-            opts['CharmUrl'] = _url['charm']['url']
+            settings['CharmUrl'] = _url['charm']['url']
 
-        if 'constraints' in settings:
+        if 'Constraints' in settings:
             opts_ = []
-            for k, v in settings['constraints'].items():
+            for k, v in settings['Constraints'].items():
                 opts_.append("{k}={v}".format(k=k, v=v))
             if opts_:
-                opts['Constraints'] = " ".join(opts)
-
+                settings['Constraints'] = " ".join(opts_)
         return self.call(dict(Type="Client",
                               Request="ServiceDeploy",
-                              Params=dict(opts)))
+                              Params=dict(settings)))
 
     def set_config(self, service_name, config_keys):
         """ Sets machine config """
