@@ -217,22 +217,11 @@ class JujuClient:
         opts = {}
         opts['ServiceName'] = service_name
 
-        if 'machine_id' in settings:
-            opts['ToMachineSpec'] = settings['machine_id']
-
         if 'charm_url' in settings:
             opts['CharmUrl'] = settings['charm_url']
         else:
             _url = query_cs(service_name)
             opts['CharmUrl'] = _url['charm']['url']
-
-        if 'instances' in settings:
-            opts['NumUnits'] = settings['instances']
-        else:
-            opts['NumUnits'] = 1
-
-        if 'configfile' in settings:
-            opts['ConfigYAML'] = settings['configfile']
 
         if 'constraints' in settings:
             opts_ = []
