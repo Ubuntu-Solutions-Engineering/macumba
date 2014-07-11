@@ -61,7 +61,6 @@ class JujuWS(WebSocketClient):
         self.send(json.dumps(creds))
 
     def received_message(self, m):
-        log.debug(m.data)
         self.messages.put(json.loads(m.data.decode('utf-8')))
 
     def closed(self, code, reason=None):
@@ -227,7 +226,6 @@ class JujuClient:
         if 'Constraints' in settings:
             settings['Constraints'] = self._prepare_constraints(
                 settings['Constraints'])
-        log.debug("Deploying with: {}".format(settings))
         return self.call(dict(Type="Client",
                               Request="ServiceDeploy",
                               Params=dict(settings)))
