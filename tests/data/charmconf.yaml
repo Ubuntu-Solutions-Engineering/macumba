@@ -1,0 +1,3 @@
+keystone:
+  admin-password: pass
+  admin-user: 'admin'

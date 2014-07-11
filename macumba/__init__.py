@@ -162,7 +162,7 @@ class JujuClient:
                               Request="EnvironmentSet",
                               Params=dict(Config=config)))
 
-    def add_machine(self, series="", constraints={},
+    def add_machine(self, series="", constraints=None,
                     machine_spec="", parent_id="", container_type=""):
 
         """Allocate a new machine from the iaas provider.
@@ -174,10 +174,11 @@ class JujuClient:
 
         params = dict(
             Series=series,
-            Constraints=self._prepare_constraints(constraints),
             ContainerType=container_type,
             ParentId=parent_id,
             Jobs=[Jobs.HostUnits])
+        if constraints:
+            params['Constraints'] = self._prepare_constraints(constraints),
         log.debug("Adding machine: {}".format(params))
         return self.add_machines([params])
 
@@ -216,6 +217,10 @@ class JujuClient:
         :param dict settings: (optional) deploy settings
         """
         settings['ServiceName'] = service_name
+
+        if 'ConfigYAML' in settings:
+            with open(settings['ConfigYAML'], 'r') as f:
+                settings['ConfigYAML'] = f.read().strip()
 
         if not 'NumUnits' in settings:
             settings['NumUnits'] = 1

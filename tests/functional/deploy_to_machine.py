@@ -7,6 +7,5 @@ PASSWORD = 'pass'
 if __name__ == "__main__":
     j = macumba.JujuClient(password=PASSWORD)
     j.login()
-    j.deploy('mysql')
-    properties = dict(ToMachineSpec="lxc:1")
+    properties = dict(ToMachineSpec="lxc:1", NumUnits=1)
     j.deploy('keystone', properties)
