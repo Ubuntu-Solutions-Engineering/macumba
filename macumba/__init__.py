@@ -57,7 +57,6 @@ class JujuWS(WebSocketClient):
         self.messages = Queue()
 
     def opened(self):
-        log.debug('Opened {}'.format(creds))
         self.send(json.dumps(creds))
 
     def received_message(self, m):
@@ -177,7 +176,6 @@ class JujuClient:
             ParentId=parent_id,
             Constraints=self._prepare_constraints(constraints),
             Jobs=[Jobs.HostUnits])
-        log.debug("Adding machine: {}".format(params))
         return self.add_machines([params])
 
     def add_machines(self, machines):
