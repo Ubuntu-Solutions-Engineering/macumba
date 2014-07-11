@@ -230,6 +230,7 @@ class JujuClient:
                 opts_.append("{k}={v}".format(k=k, v=v))
             if opts_:
                 settings['Constraints'] = " ".join(opts_)
+        log.debug("Deploying with: {}".format(settings))
         return self.call(dict(Type="Client",
                               Request="ServiceDeploy",
                               Params=dict(settings)))
