@@ -218,10 +218,6 @@ class JujuClient:
         """
         settings['ServiceName'] = service_name
 
-        if 'ConfigYAML' in settings:
-            with open(settings['ConfigYAML'], 'r') as f:
-                settings['ConfigYAML'] = f.read().strip()
-
         if not 'NumUnits' in settings:
             settings['NumUnits'] = 1
 
