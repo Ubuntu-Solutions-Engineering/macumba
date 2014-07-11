@@ -225,11 +225,8 @@ class JujuClient:
             settings['CharmUrl'] = _url['charm']['url']
 
         if 'Constraints' in settings:
-            opts_ = []
-            for k, v in settings['Constraints'].items():
-                opts_.append("{k}={v}".format(k=k, v=v))
-            if opts_:
-                settings['Constraints'] = " ".join(opts_)
+            settings['Constraints'] = self._prepare_constraints(
+                settings['Constraints'])
         log.debug("Deploying with: {}".format(settings))
         return self.call(dict(Type="Client",
                               Request="ServiceDeploy",
