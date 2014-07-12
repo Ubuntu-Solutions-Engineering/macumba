@@ -117,10 +117,9 @@ class JujuClient:
 
     def info(self):
         """ Returns Juju environment state """
-        self.call(dict(Type="Client",
-                       Request="EnvironmentInfo"))
+        return self.call(dict(Type="Client",
+                         Request="EnvironmentInfo"))
 
-    @property
     def status(self):
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",

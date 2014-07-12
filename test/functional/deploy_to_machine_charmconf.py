@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-
+import sys
+sys.path.insert(0, '../macumba')
 import macumba
-import os
 
 PASSWORD = 'pass'
-CHARMCONF = os.path.abspath(os.path.join(__file__,
-                                         '../../data/charmconf.yaml'))
 
 if __name__ == "__main__":
     j = macumba.JujuClient(password=PASSWORD)
     j.login()
     j.deploy('keystone',
-             dict(ConfigYAML=CHARMCONF,
+             dict(ConfigYAML='keystone:\n  admin-pass: pass',
                   NumUnits=1))
