@@ -24,8 +24,8 @@ clean:
 	@debian/rules clean
 	@rm -rf debian/macumba
 	@rm -rf docs/_build/*
-	@rm -rf ../macumba-*.deb ../macumba-*.tar.gz ../macumba-*.dsc ../macumba-*.changes \
-		../macumba-*.build
+	@rm -rf ../macumba_*.deb ../macumba_*.tar.gz ../macumba_*.dsc ../macumba_*.changes \
+		../macumba_*.build ../python3-macumba_*.deb
 
 deb-src: clean update_version tarball
 	@debuild -S -us -uc
