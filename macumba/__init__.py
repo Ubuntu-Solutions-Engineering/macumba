@@ -49,6 +49,10 @@ class Jobs:
     ManageState = "JobManageState"
 
 
+class LoginError(Exception):
+    "Error logging in to juju api"
+
+
 class JujuWS(WebSocketClient):
     def __init__(self, url, password, protocols=['https-only'],
                  extensions=None, ssl_options=None, headers=None):
@@ -94,7 +98,9 @@ class JujuClient:
 
     def login(self):
         self.conn.connect()
-        self.conn.receive()
+        res = self.conn.receive()
+        if 'Error' in res:
+            raise LoginError(res['ErrorCode'])
 
     def close(self):
         """ Closes connection to juju websocket """
