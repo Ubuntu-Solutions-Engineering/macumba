@@ -118,7 +118,13 @@ class JujuClient:
         """
         self._request_id = self._request_id + 1
         params['RequestId'] = self._request_id
-        self.conn.send(json.dumps(params))
+        try:
+            self.conn.send(json.dumps(params))
+        except OSError:
+            self.conn.close()
+            self.login()
+            self._request_id = 1
+            self.conn.send(json.dumps(params))
         return self.receive()
 
     def info(self):
@@ -130,6 +136,17 @@ class JujuClient:
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",
                          Request="FullStatus"))
+
+    def get_watcher(self):
+        """ Returns watcher """
+        return self.call(dict(Type="Client",
+                         Request="WatchAll"))
+
+    def get_watched_tasks(self, watcher_id):
+        """ Returns a list of all watches for Id """
+        return self.call(dict(Type="AllWatcher",
+                              Request="Next",
+                              Id=watcher_id))
 
     def add_charm(self, charm_url):
         """ Adds charm """
