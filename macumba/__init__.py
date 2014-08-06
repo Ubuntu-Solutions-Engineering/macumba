@@ -64,6 +64,7 @@ class JujuWS(WebSocketClient):
         self.send(json.dumps(creds))
 
     def received_message(self, m):
+        json.loads(m.data.decode('utf-8'))
         self.messages.put(json.loads(m.data.decode('utf-8')))
 
     def closed(self, code, reason=None):
@@ -80,6 +81,8 @@ class JujuWS(WebSocketClient):
 
 class JujuClient:
     def __init__(self, url='wss://localhost:17070', password='pass'):
+        self.url = url
+        self.password = password
         self.conn = JujuWS(url, password)
         self._request_id = 1
         creds['Params']['Password'] = password
@@ -102,6 +105,12 @@ class JujuClient:
         if 'Error' in res:
             raise LoginError(res['ErrorCode'])
 
+    def reconnect(self):
+        self.close()
+        self.conn = JujuWS(self.url, self.password)
+        self.login()
+        self._request_id = 1
+
     def close(self):
         """ Closes connection to juju websocket """
         self.conn.close()
@@ -120,10 +129,11 @@ class JujuClient:
         params['RequestId'] = self._request_id
         try:
             self.conn.send(json.dumps(params))
-        except OSError:
-            self.conn.close()
-            self.login()
-            self._request_id = 1
+        except:
+            # Possible problem is connection timeout so just re-login
+            # and re-issue request
+            log.debug("Problem with connection, reconnecting.")
+            self.reconnect()
             self.conn.send(json.dumps(params))
         return self.receive()
 
