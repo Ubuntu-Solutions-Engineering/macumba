@@ -113,11 +113,19 @@ class JujuClient:
 
     def close(self):
         """ Closes connection to juju websocket """
-        self.conn.close()
+        try:
+            self.conn.close()
+        except:
+            log.debug("Failed to close connection.")
+            return
 
     def receive(self):
         res = self.conn.receive()
-        return res['Response']
+        try:
+            return res['Response']
+        except:
+            log.debug("Failed to parse response.")
+            return
 
     def call(self, params):
         """ Get json data from juju api daemon
