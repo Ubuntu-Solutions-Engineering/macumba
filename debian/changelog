@@ -1,3 +1,9 @@
+macumba (0.2-0ubuntu1) utopic; urgency=medium
+
+  * better exception handling
+
+ -- Adam Stokes <adam.stokes@ubuntu.com>  Thu, 07 Aug 2014 01:25:49 +0200
+
 macumba (0.1-0ubuntu1) utopic; urgency=low
 
   * Initial Release
