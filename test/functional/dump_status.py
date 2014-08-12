@@ -10,5 +10,5 @@ JUJU_PASS = 'pass'
 if __name__ == "__main__":
     j = macumba.JujuClient(url=JUJU_URL, password=JUJU_PASS)
     j.login()
-    ret = j.status()
+    ret = j.deploy('precise/wordpress', 'wordpress')
     pprint(ret)

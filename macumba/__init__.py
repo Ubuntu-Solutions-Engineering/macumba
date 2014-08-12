@@ -30,13 +30,17 @@ creds = {'Type': 'Admin',
                     'Password': None}}
 
 
-def query_cs(charm, series='trusty'):
+def query_cs(charm):
     """ This helper routine will query the charm store to pull latest revisions
     and charmstore url for the api.
 
-    :param str charm: charm name
-    :param str series: series, defaults. trusty
+    :param str charm: charm name, can be in the form of 'precise/<charm>' to
+                      specify an alternate series.
     """
+    try:
+        series, charm = charm.split('/')
+    except ValueError:
+        series = 'trusty'
     charm_store_url = 'https://manage.jujucharms.com/api/3/charm'
     url = path.join(charm_store_url, series, charm)
     r = requests.get(url)

@@ -17,8 +17,7 @@ JUJU_PASS = 'pass'
 if __name__ == "__main__":
     j = macumba.JujuClient(url=JUJU_URL, password=JUJU_PASS)
     j.login()
-    properties = dict(ToMachineSpec="lxc:1", NumUnits=1)
-    j.deploy('keystone', properties)
+    j.deploy('keystone')
 ```
 
 # Authors
