@@ -348,20 +348,16 @@ class JujuClient:
                               Request="ServiceCharmRelations",
                               Params=dict(ServiceName=service_name)))
 
-    def add_units(self, service_name, num_units=1):
-        """ Add units """
-        return self.call(dict(Type="Client",
-                              Request="AddServiceUnits",
-                              Params=dict(ServiceName=service_name,
-                                          NumUnits=num_units)))
-
-    def add_unit(self, service_name, machine_spec=None, count=1):
+    def add_unit(self, service_name, settings={}):
         """ Add unit """
+        settings['ServiceName'] = service_name
+
+        if not 'NumUnits' in settings:
+            settings['NumUnits'] = 1
+
         return self.call(dict(Type="Client",
                               Request="AddServiceUnits",
-                              Params=dict(ServiceName=service_name,
-                                          ToMachineSpec=machine_spec,
-                                          NumUnit=count)))
+                              Params=dict(settings)))
 
     def remove_unit(self, unit_names):
         """ Removes unit """

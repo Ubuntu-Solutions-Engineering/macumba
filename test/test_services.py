@@ -40,3 +40,10 @@ class MacumbaServiceTest(unittest.TestCase):
     def test_services(self):
         ret = c.status()['Services']
         self.assertTrue(ret)
+
+
+@unittest.skipIf(not IS_CONNECTED, 'Not connected.')
+class MacumbaAddUnitTest(unittest.TestCase):
+    def test_add_unit(self):
+        ret = c.add_unit('nova-compute')
+        self.assertTrue(len(ret['Units']) == 1)
