@@ -246,27 +246,33 @@ class JujuClient:
                               Params=dict(Endpoints=[endpoint_a,
                                                      endpoint_b])))
 
-    def deploy(self, service_name, settings={}):
+    def deploy(self, charm, service_name, num_units=1, config_yaml="",
+               constraints=None, machine_spec=""):
         """ Deploy a charm to an instance
 
+        :param str charm: Name of charm
         :param str service_name: name of service
-        :param dict settings: (optional) deploy settings
+        :param int num_units: number of units
+        :param str config_yaml: charm configuration options
+        :param dict constraints: deploy constraints
+        :param str machine_spec: Type of machine to deploy to
+        :returns: Deployed charm status
         """
-        settings['ServiceName'] = service_name
+        params = {'ServiceName': service_name}
 
-        if not 'NumUnits' in settings:
-            settings['NumUnits'] = 1
+        _url = query_cs(service_name)
+        params['CharmUrl'] = _url['charm']['url']
+        params['NumUnits'] = num_units
+        params['ConfigYAML'] = config_yaml
 
-        if not 'CharmUrl' in settings:
-            _url = query_cs(service_name)
-            settings['CharmUrl'] = _url['charm']['url']
-
-        if 'Constraints' in settings:
-            settings['Constraints'] = self._prepare_constraints(
-                settings['Constraints'])
+        if constraints:
+            params['Constraints'] = self._prepare_constraints(
+                params['Constraints'])
+        if machine_spec:
+            params['ToMachineSpec'] = machine_spec
         return self.call(dict(Type="Client",
                               Request="ServiceDeploy",
-                              Params=dict(settings)))
+                              Params=dict(params)))
 
     def set_config(self, service_name, config_keys):
         """ Sets machine config """
@@ -348,16 +354,23 @@ class JujuClient:
                               Request="ServiceCharmRelations",
                               Params=dict(ServiceName=service_name)))
 
-    def add_unit(self, service_name, settings={}):
-        """ Add unit """
-        settings['ServiceName'] = service_name
+    def add_unit(self, service_name, num_units=1, machine_spec=""):
+        """ Add unit
 
-        if not 'NumUnits' in settings:
-            settings['NumUnits'] = 1
+        :param str service_name: Name of charm
+        :param int num_units: Number of units
+        :param str machine_spec: Type of machine to deploy to
+        :returns dict: Units added
+        """
+        params = {}
+        params['ServiceName'] = service_name
+        params['NumUnits'] = num_units
+        if machine_spec:
+            params['ToMachineSpec'] = machine_spec
 
         return self.call(dict(Type="Client",
                               Request="AddServiceUnits",
-                              Params=dict(settings)))
+                              Params=dict(params)))
 
     def remove_unit(self, unit_names):
         """ Removes unit """
