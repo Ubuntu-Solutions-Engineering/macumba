@@ -271,7 +271,7 @@ class JujuClient:
 
         if constraints:
             params['Constraints'] = self._prepare_constraints(
-                params['Constraints'])
+                constraints)
         if machine_spec:
             params['ToMachineSpec'] = machine_spec
         return self.call(dict(Type="Client",
