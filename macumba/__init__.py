@@ -29,6 +29,11 @@ creds = {'Type': 'Admin',
          'Params': {'AuthTag': 'user-admin',
                     'Password': None}}
 
+class MacumbaError(Exception):
+    "Base error class"
+
+class CharmNotFoundError(MacumbaError):
+    "Error when getting charm store url"
 
 def query_cs(charm):
     """ This helper routine will query the charm store to pull latest revisions
@@ -44,6 +49,11 @@ def query_cs(charm):
     charm_store_url = 'https://manage.jujucharms.com/api/3/charm'
     url = path.join(charm_store_url, series, charm)
     r = requests.get(url)
+    if r.status_code != 200:
+        log.error("could not find charm store URL for charm '{}'".format(url))
+        rj = r.json()
+        raise CharmNotFoundError("{type} {charm_id}".format(**rj))
+
     return r.json()
 
 
@@ -53,8 +63,16 @@ class Jobs:
     ManageState = "JobManageState"
 
 
-class LoginError(Exception):
+class LoginError(MacumbaError):
     "Error logging in to juju api"
+
+
+class ServerError(MacumbaError):
+    "Generic error response from server"
+
+
+class BadResponseError(MacumbaError):
+    "Unable to parse response from server"
 
 
 class JujuWS(WebSocketClient):
@@ -125,11 +143,12 @@ class JujuClient:
 
     def receive(self):
         res = self.conn.receive()
+        if 'Error' in res:
+            raise ServerError(res['Error'])
         try:
             return res['Response']
         except:
-            log.debug("Failed to parse response.")
-            return
+            raise BadResponseError("Failed to parse response: {}".format(res))
 
     def call(self, params):
         """ Get json data from juju api daemon
