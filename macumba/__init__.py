@@ -29,11 +29,14 @@ creds = {'Type': 'Admin',
          'Params': {'AuthTag': 'user-admin',
                     'Password': None}}
 
+
 class MacumbaError(Exception):
     "Base error class"
 
+
 class CharmNotFoundError(MacumbaError):
     "Error when getting charm store url"
+
 
 def query_cs(charm):
     """ This helper routine will query the charm store to pull latest revisions
