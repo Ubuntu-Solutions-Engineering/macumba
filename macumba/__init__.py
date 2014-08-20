@@ -89,7 +89,7 @@ class JujuWS(WebSocketClient):
         self.send(json.dumps(creds))
 
     def received_message(self, m):
-        json.loads(m.data.decode('utf-8'))
+        log.debug(json.loads(m.data.decode('utf-8')))
         self.messages.put(json.loads(m.data.decode('utf-8')))
 
     def closed(self, code, reason=None):
@@ -101,6 +101,7 @@ class JujuWS(WebSocketClient):
         message = self.messages.get()
         if message is StopIteration:
             return None
+        log.debug(message)
         return message
 
 
