@@ -20,6 +20,7 @@ import logging
 import requests
 from os import path
 from queue import Queue
+import pprint
 
 log = logging.getLogger('macumba')
 
@@ -58,6 +59,14 @@ def query_cs(charm):
         raise CharmNotFoundError("{type} {charm_id}".format(**rj))
 
     return r.json()
+
+
+class PrettyLog():
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __repr__(self):
+        return pprint.pformat(self.obj)
 
 
 class Jobs:
@@ -162,6 +171,7 @@ class JujuClient:
         """
         self._request_id = self._request_id + 1
         params['RequestId'] = self._request_id
+        log.debug("Calling: {0}".format(PrettyLog(params)))
         try:
             self.conn.send(json.dumps(params))
         except:
