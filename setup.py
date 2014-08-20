@@ -17,20 +17,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""
-macumba
-===============
-
-Python3 bindings for Juju
-
-"""
-
 from setuptools import setup, find_packages
 
 import os
 import sys
 
 VERSION = '0.3'
+
+_long_desc = "Macumba"
+with open('README.md', 'r') as fp:
+    _long_desc = fp.read()
 
 REQUIREMENTS = [
     "requests",
@@ -52,7 +48,7 @@ if sys.argv[-1] == 'version':
 setup(name='macumba',
       version=VERSION,
       description="Python 3 bindings for Juju",
-      long_description=__doc__,
+      long_description=_long_desc,
       author='Canonical Solutions Engineering',
       author_email='ubuntu-dev@lists.ubuntu.com',
       url='https://github.com/Ubuntu-Solutions-Engineering/macumba',

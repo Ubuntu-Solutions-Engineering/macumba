@@ -20,6 +20,22 @@ if __name__ == "__main__":
     j.deploy('keystone')
 ```
 
+## macumba-shell
+
+Running `macumba-shell` will allow you to work with the api directly.
+
+To get help with the library run
+
+```
+>>> help(j)
+```
+
+To deploy a charm
+
+```
+>>> j.deploy('mysql', 'mysql')
+```
+
 # Authors
 
 2014 Adam Stokes <adam.stokes@ubuntu.com>
