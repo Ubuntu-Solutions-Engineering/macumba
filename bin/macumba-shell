@@ -17,7 +17,7 @@
 from getpass import getpass
 
 from macumba import JujuClient
-import yaml 
+import yaml
 from glob import glob
 import os
 

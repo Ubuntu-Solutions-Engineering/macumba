@@ -57,4 +57,5 @@ setup(name='macumba',
       author_email='ubuntu-dev@lists.ubuntu.com',
       url='https://github.com/Ubuntu-Solutions-Engineering/macumba',
       license="AGPLv3+",
+      scripts=['bin/macumba-shell'],
       packages=find_packages(exclude=["test"]))
