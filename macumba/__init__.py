@@ -428,16 +428,18 @@ class JujuClient:
                               Request="PublicAddress",
                               Params=dict(Target=target)))
 
-    def set_annontation(self, entity, entity_type, annotation):
-        """ Sets annontation """
+    def set_annotations(self, entity, entity_type, annotation):
+        """ Sets annotations.
+        :param dict annotation: dict with string pairs.
+        """
         return self.call(dict(Type="Client",
                               Request="SetAnnotations",
-                              Params=dict(Tag="%-%s" % (entity_type, entity),
+                              Params=dict(Tag="%s-%s" % (entity_type, entity),
                                           Pairs=annotation)))
 
-    def get_annotation(self, entity, entity_type):
-        """ Gets annotation """
+    def get_annotations(self, entity, entity_type):
+        """ Gets annotations """
         return self.call(dict(Type="Client",
-                              Request="GetAnnotation",
-                              Params=dict(Tag="%-s%" % (entity_type,
+                              Request="GetAnnotations",
+                              Params=dict(Tag="%s-%s" % (entity_type,
                                                         entity))))
