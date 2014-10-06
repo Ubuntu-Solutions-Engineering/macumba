@@ -1,3 +1,9 @@
+macumba (0.5-0ubuntu1) utopic; urgency=medium
+
+  * Fix annotations
+
+ -- Adam Stokes <adam.stokes@ubuntu.com>  Mon, 06 Oct 2014 11:52:49 -0400
+
 macumba (0.3-0ubuntu1) utopic; urgency=medium
 
   * Add macumba-shell for interactively working with API
