@@ -81,6 +81,9 @@ class LoginError(MacumbaError):
 
 class ServerError(MacumbaError):
     "Generic error response from server"
+    def __init__(self, message, response):
+        self.response = response
+        super().__init__(self, message)
 
 
 class BadResponseError(MacumbaError):
@@ -157,7 +160,7 @@ class JujuClient:
     def receive(self):
         res = self.conn.receive()
         if 'Error' in res:
-            raise ServerError(res['Error'])
+            raise ServerError(res['Error'], res)
         try:
             return res['Response']
         except:
@@ -271,10 +274,19 @@ class JujuClient:
 
     def add_relation(self, endpoint_a, endpoint_b):
         """ Adds relation between units """
-        return self.call(dict(Type="Client",
-                              Request="AddRelation",
-                              Params=dict(Endpoints=[endpoint_a,
-                                                     endpoint_b])))
+        try:
+            rv = self.call(dict(Type="Client",
+                                Request="AddRelation",
+                                Params=dict(Endpoints=[endpoint_a,
+                                                       endpoint_b])))
+        except ServerError as e:
+            # do not treat pre-existing relations as exceptions:
+            if 'relation already exists' in e.response['Error']:
+                rv = e.response
+            else:
+                raise e
+
+        return rv
 
     def remove_relation(self, endpoint_a, endpoint_b):
         """ Removes relation """
