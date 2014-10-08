@@ -132,7 +132,7 @@ class JujuClient:
         return r
 
     def _prepare_constraints(self, constraints):
-        for k in ['cpu-cores', 'cpu-power', 'mem']:
+        for k in ['cpu-cores', 'cpu-power', 'mem', 'root-disk']:
             if constraints.get(k):
                 constraints[k] = int(constraints[k])
         return constraints
