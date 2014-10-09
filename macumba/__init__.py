@@ -32,10 +32,12 @@ creds = {'Type': 'Admin',
 
 
 class MacumbaError(Exception):
+
     "Base error class"
 
 
 class CharmNotFoundError(MacumbaError):
+
     "Error when getting charm store url"
 
 
@@ -62,6 +64,7 @@ def query_cs(charm):
 
 
 class PrettyLog():
+
     def __init__(self, obj):
         self.obj = obj
 
@@ -76,21 +79,26 @@ class Jobs:
 
 
 class LoginError(MacumbaError):
+
     "Error logging in to juju api"
 
 
 class ServerError(MacumbaError):
+
     "Generic error response from server"
+
     def __init__(self, message, response):
         self.response = response
         super().__init__(self, message)
 
 
 class BadResponseError(MacumbaError):
+
     "Unable to parse response from server"
 
 
 class JujuWS(WebSocketClient):
+
     def __init__(self, url, password, protocols=['https-only'],
                  extensions=None, ssl_options=None, headers=None):
         WebSocketClient.__init__(self, url, protocols, extensions,
@@ -118,6 +126,7 @@ class JujuWS(WebSocketClient):
 
 
 class JujuClient:
+
     def __init__(self, url='wss://localhost:17070', password='pass'):
         self.url = url
         self.password = password
@@ -188,17 +197,17 @@ class JujuClient:
     def info(self):
         """ Returns Juju environment state """
         return self.call(dict(Type="Client",
-                         Request="EnvironmentInfo"))
+                              Request="EnvironmentInfo"))
 
     def status(self):
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",
-                         Request="FullStatus"))
+                              Request="FullStatus"))
 
     def get_watcher(self):
         """ Returns watcher """
         return self.call(dict(Type="Client",
-                         Request="WatchAll"))
+                              Request="WatchAll"))
 
     def get_watched_tasks(self, watcher_id):
         """ Returns a list of all watches for Id """
@@ -242,7 +251,6 @@ class JujuClient:
 
     def add_machine(self, series="", constraints={},
                     machine_spec="", parent_id="", container_type=""):
-
         """Allocate a new machine from the iaas provider.
         """
         if machine_spec:
@@ -261,8 +269,8 @@ class JujuClient:
     def add_machines(self, machines):
         """ Add machines """
         return self.call(dict(Type="Client",
-                         Request="AddMachines",
-                         Params=dict(MachineParams=machines)))
+                              Request="AddMachines",
+                              Params=dict(MachineParams=machines)))
 
     def destroy_machines(self, machine_ids, force=False):
         params = {"MachineNames": machine_ids}
@@ -454,4 +462,4 @@ class JujuClient:
         return self.call(dict(Type="Client",
                               Request="GetAnnotations",
                               Params=dict(Tag="%s-%s" % (entity_type,
-                                                        entity))))
+                                                         entity))))
