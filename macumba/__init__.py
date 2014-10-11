@@ -202,7 +202,7 @@ class JujuClient:
     def status(self):
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",
-                              Request="FullStatus"))
+                              Request="Status"))
 
     def get_watcher(self):
         """ Returns watcher """
