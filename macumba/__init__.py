@@ -317,7 +317,10 @@ class JujuClient:
         """
         params = {'ServiceName': service_name}
 
-        _url = query_cs(charm)
+        if charm.startswith("cs:"):
+            _url = charm
+        else:
+            _url = query_cs(charm)
         params['CharmUrl'] = _url['charm']['url']
         params['NumUnits'] = num_units
         params['ConfigYAML'] = config_yaml
