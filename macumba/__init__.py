@@ -204,6 +204,18 @@ class JujuClient:
         return self.call(dict(Type="Client",
                               Request="FullStatus"))
 
+    def debug_log(self, units=None, n=2):
+        """ returns log lines matching the units listed in 'units'
+        """
+        params = dict(maxLines=n)
+        print("self.url is " + self.url)
+        if units:
+            incs = ",".join(units)
+            params['includeEntity'] = incs
+        return self.call(dict(Type="Client",
+                              Request="log",
+                              Params=params))
+
     def get_watcher(self):
         """ Returns watcher """
         return self.call(dict(Type="Client",
