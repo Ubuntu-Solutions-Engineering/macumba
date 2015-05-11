@@ -21,7 +21,9 @@ import yaml
 from glob import glob
 import os
 
-jenv_files = glob(os.path.expanduser("~/.juju/environments/*.jenv"))
+juju_home = os.getenv("JUJU_HOME", "~/.juju")
+jenv_pat = os.path.expanduser(os.path.join(juju_home, "environments/*.jenv"))
+jenv_files = glob(jenv_pat)
 if len(jenv_files) == 0 or len(jenv_files) > 1:
     print("found 0 or >1 .jenv files, will ask for IP and password")
     wss_ip = input("juju api IP (with port):")
@@ -31,6 +33,7 @@ else:
     wss_ip = env['state-servers'][0]
     jpass = env['password']
 
+print('Connecting using wss ip ' + wss_ip)
 j = JujuClient(url='wss://' + wss_ip, password=jpass)
 
 j.login()
