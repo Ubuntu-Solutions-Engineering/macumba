@@ -42,14 +42,20 @@ j = JujuClient(url='wss://' + wss_ip, password=jpass)
 j.login()
 
 def loop_on_status(j, i):
-    print("thread {} starting".format(i))
+    print("{} starting: {}".format(i, threading.current_thread().name))
     if i == 0:
         time.sleep(3)
+        print("*"*80)
+        print("{} RECONNECT {}\n".format(i, threading.current_thread().name))
         j.reconnect()
+        time.sleep(5)
+        j.reconnect()
+        print("*"*80)
+        print("{} RECONNECT {}\n".format(i, threading.current_thread().name))
         
     for idx in range(30):
         machines = j.status()['Machines']
-        print("{} ".format(i), end="", flush=True)
+        print("{} ".format(i), end="")#, flush=True)
         #sleeptime = 1 * ((i+1) * 0.1)
         sleeptime = 0.1
         time.sleep(sleeptime)
@@ -61,7 +67,8 @@ threads = [threading.Thread(target=loop_on_status, args=(j, i))
            for i in range(NTHREADS)]
 for thread in threads:
     thread.start()
-    
+
 for thread in threads:
     thread.join()
+
 print('done')
