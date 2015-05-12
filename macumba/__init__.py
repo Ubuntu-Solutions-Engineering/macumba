@@ -19,8 +19,9 @@ import json
 import logging
 import requests
 from os import path
-from queue import Queue
+from queue import Queue, Empty
 import pprint
+import threading
 
 log = logging.getLogger('macumba')
 
@@ -118,7 +119,10 @@ class JujuWS(WebSocketClient):
     def receive(self):
         if self.terminated and self.messages.empty():
             return None
-        message = self.messages.get()
+        try:
+            message = self.messages.get(timeout=2)
+        except Empty:
+            return None
         if message is StopIteration:
             return None
         log.debug(message)
@@ -130,7 +134,9 @@ class JujuClient:
     def __init__(self, url='wss://localhost:17070', password='pass'):
         self.url = url
         self.password = password
-        self.conn = JujuWS(url, password)
+        self.connlock = threading.RLock()
+        with self.connlock:
+            self.conn = JujuWS(url, password)
         self._request_id = 1
         creds['Params']['Password'] = password
 
@@ -147,52 +153,55 @@ class JujuClient:
         return constraints
 
     def login(self):
-        self.conn.connect()
-        res = self.conn.receive()
-        if 'Error' in res:
+        with self.connlock:
+            self.conn.connect()
+            res = self.conn.receive()
+        if res is None or 'Error' in res:
             raise LoginError(res['ErrorCode'])
 
     def reconnect(self):
-        self.close()
-        self.conn = JujuWS(self.url, self.password)
-        self.login()
-        self._request_id = 1
+        with self.connlock:
+            self.close()
+            self.conn = JujuWS(self.url, self.password)
+            self.login()
+            self._request_id = 1
 
     def close(self):
         """ Closes connection to juju websocket """
-        try:
+        with self.connlock:
             self.conn.close()
-        except:
-            log.debug("Failed to close connection.")
-            return
+            self.conn = None
 
     def receive(self):
-        res = self.conn.receive()
-        if 'Error' in res:
-            raise ServerError(res['Error'], res)
+        with self.connlock:
+            res = self.conn.receive()
+            if res is None or 'Error' in res:
+                raise ServerError(res['Error'], res)
         try:
             return res['Response']
         except:
             raise BadResponseError("Failed to parse response: {}".format(res))
 
     def call(self, params):
-        """ Get json data from juju api daemon
+        """ Get json data from juju api daemon.
+        May return None
 
         :params params: Additional params to be passed into request
         :type params: dict
         """
-        self._request_id = self._request_id + 1
-        params['RequestId'] = self._request_id
-        log.debug("Calling: {0}".format(PrettyLog(params)))
-        try:
-            self.conn.send(json.dumps(params))
-        except:
-            # Possible problem is connection timeout so just re-login
-            # and re-issue request
-            log.debug("Problem with connection, reconnecting.")
-            self.reconnect()
-            self.conn.send(json.dumps(params))
-        return self.receive()
+        with self.connlock:
+            try:
+                self._request_id = self._request_id + 1
+                params['RequestId'] = self._request_id
+                log.debug("Calling: {0}".format(PrettyLog(params)))
+
+                self.conn.send(json.dumps(params))
+                return self.receive()
+
+            except Exception:
+                log.exception("Problem with connection, reconnecting.")
+                self.reconnect()
+                return self.call(params)
 
     def info(self):
         """ Returns Juju environment state """
