@@ -98,34 +98,90 @@ class BadResponseError(MacumbaError):
     "Unable to parse response from server"
 
 
+class ConnectionClosedError(MacumbaError):
+
+    "Attempted to receive messages from closed connection"
+
+
+class UnknownRequestError(MacumbaError):
+
+    "Attempted to receive a message with an unknown ID"
+
+
 class JujuWS(WebSocketClient):
 
     def __init__(self, url, password, protocols=['https-only'],
-                 extensions=None, ssl_options=None, headers=None):
+                 extensions=None, ssl_options=None, headers=None,
+                 start_reqid=1):
         WebSocketClient.__init__(self, url, protocols, extensions,
                                  ssl_options=ssl_options, headers=headers)
-        self.messages = Queue()
+        self.open_done = threading.Event()
+        self.msglock = threading.RLock()
+        self.messages = {}
+        self._cur_request_id = start_reqid
 
+    # WebSocketClient subclass overrides, run in private thread:
     def opened(self):
-        self.send(json.dumps(creds))
+        self.open_done.set()
 
     def received_message(self, m):
-        log.debug(json.loads(m.data.decode('utf-8')))
-        self.messages.put(json.loads(m.data.decode('utf-8')))
+        msg = json.loads(m.data.decode('utf-8'))
+        msg_req_id = msg['RequestId']
+        with self.msglock:
+            self.messages[msg_req_id] = msg
 
     def closed(self, code, reason=None):
-        self.messages.task_done()
+        log.debug("socket closed")
 
-    def receive(self):
-        if self.terminated and self.messages.empty():
-            return None
-        try:
-            message = self.messages.get(timeout=2)
-        except Empty:
-            return None
-        if message is StopIteration:
-            return None
-        log.debug(message)
+    # actions for users of the class:
+    def get_current_request_id(self):
+        "only intended to pass to constructor of a replacing client"
+        return self._cur_request_id
+
+    def do_close(self):
+        self.close()
+
+    def do_connect(self):
+        self.connect()
+        self.open_done.wait()
+        self.open_done.clear()
+        rv = self.do_send(creds)
+        return rv
+
+    def do_send(self, json_message):
+        self._cur_request_id += 1
+        json_message['RequestId'] = self._cur_request_id
+
+        self.send(json.dumps(json_message))
+
+        with self.msglock:
+            self.messages[self._cur_request_id] = None
+
+        return self._cur_request_id
+
+    def do_receive(self, request_id):
+        """Checks for message matching request_id.
+
+        Will return None if message has not arrived yet.
+
+        Raises UnknownRequestError if request_id hasn't been sent yet
+        (or was already received).
+
+        """
+        if self.terminated:
+            raise ConnectionClosedError
+
+        with self.msglock:
+            if request_id not in self.messages:
+                errmsg = ("{} not in messages. "
+                          "cur = {}".format(request_id,
+                                            self._cur_request_id))
+                raise UnknownRequestError(errmsg)
+
+            message = self.messages[request_id]
+            if message is not None:
+                del self.messages[request_id]
+
         return message
 
 
@@ -137,7 +193,6 @@ class JujuClient:
         self.connlock = threading.RLock()
         with self.connlock:
             self.conn = JujuWS(url, password)
-        self._request_id = 1
         creds['Params']['Password'] = password
 
     def _prepare_strparams(self, d):
@@ -153,30 +208,47 @@ class JujuClient:
         return constraints
 
     def login(self):
+        """Connect and log in to juju websocket endpoint.
+        
+        block other threads until done.
+        """
         with self.connlock:
-            self.conn.connect()
-            res = self.conn.receive()
-        if res is None or 'Error' in res:
-            raise LoginError(res['ErrorCode'])
+            req_id = self.conn.do_connect()
+            try:
+                res = self.receive(req_id)
+                if 'Error' in res:
+                    raise LoginError(res['ErrorCode'])
+            except Exception as e:
+                raise LoginError(str(e))
 
     def reconnect(self):
         with self.connlock:
             self.close()
-            self.conn = JujuWS(self.url, self.password)
+            start_id = self.conn.get_current_request_id() + 1
+            self.conn = JujuWS(self.url,
+                               self.password,
+                               start_reqid=start_id)
             self.login()
-            self._request_id = 1
 
     def close(self):
         """ Closes connection to juju websocket """
         with self.connlock:
-            self.conn.close()
-            self.conn = None
+            self.conn.do_close()
 
-    def receive(self):
-        with self.connlock:
-            res = self.conn.receive()
-            if res is None or 'Error' in res:
-                raise ServerError(res['Error'], res)
+    def receive(self, request_id):
+        """receives expected message.
+        
+        returns parsed response object.
+
+        """
+        res = None
+        while res is None:
+            with self.connlock:
+                res = self.conn.do_receive(request_id)
+
+        if 'Error' in res:
+            raise ServerError(res['Error'], res)
+
         try:
             return res['Response']
         except:
@@ -184,24 +256,23 @@ class JujuClient:
 
     def call(self, params):
         """ Get json data from juju api daemon.
-        May return None
 
         :params params: Additional params to be passed into request
         :type params: dict
         """
         with self.connlock:
-            try:
-                self._request_id = self._request_id + 1
-                params['RequestId'] = self._request_id
-                log.debug("Calling: {0}".format(PrettyLog(params)))
+            req_id = self.conn.do_send(params)
+        try:
+            rv = self.receive(req_id)
 
-                self.conn.send(json.dumps(params))
-                return self.receive()
+        except UnknownRequestError as e:
+            msg = ("websocket client has no record of call. "
+                   "Retrying: {}".format(e))
+            log.debug(msg)
+            # indicates a likely disconnection, try again:
+            rv = self.call(params)
 
-            except Exception:
-                log.exception("Problem with connection, reconnecting.")
-                self.reconnect()
-                return self.call(params)
+        return rv
 
     def info(self):
         """ Returns Juju environment state """
