@@ -116,6 +116,7 @@ class JujuWS(WebSocketClient):
         WebSocketClient.__init__(self, url, protocols, extensions,
                                  ssl_options=ssl_options, headers=headers)
         self.open_done = threading.Event()
+        self.rid_lock = threading.RLock()
         self.msglock = threading.RLock()
         self.messages = {}
         self._cur_request_id = start_reqid
@@ -149,15 +150,18 @@ class JujuWS(WebSocketClient):
         return rv
 
     def do_send(self, json_message):
-        self._cur_request_id += 1
-        json_message['RequestId'] = self._cur_request_id
+        with self.rid_lock:
+            self._cur_request_id += 1
+            request_id = self._cur_request_id
+
+        json_message['RequestId'] = request_id
 
         self.send(json.dumps(json_message))
 
         with self.msglock:
-            self.messages[self._cur_request_id] = None
+            self.messages[request_id] = None
 
-        return self._cur_request_id
+        return request_id
 
     def do_receive(self, request_id):
         """Checks for message matching request_id.
