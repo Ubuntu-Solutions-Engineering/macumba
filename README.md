@@ -36,13 +36,11 @@ To deploy a charm
 >>> j.deploy('mysql', 'mysql')
 ```
 
-# Authors
-
-2014 Adam Stokes <adam.stokes@ubuntu.com>
-
 # Copyright
 
-2014 Canonical, Ltd.
+2014, 2015 Canonical, Ltd.
+2014, 2015 Adam Stokes <adam.stokes@ubuntu.com>
+
 
 # License
 
