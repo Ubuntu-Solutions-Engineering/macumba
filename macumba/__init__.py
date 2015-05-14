@@ -22,6 +22,7 @@ from os import path
 from queue import Queue, Empty
 import pprint
 import threading
+import time
 
 log = logging.getLogger('macumba')
 
@@ -106,6 +107,11 @@ class ConnectionClosedError(MacumbaError):
 class UnknownRequestError(MacumbaError):
 
     "Attempted to receive a message with an unknown ID"
+
+
+class RequestTimeout(MacumbaError):
+
+    "Request timed out"
 
 
 class JujuWS(WebSocketClient):
@@ -239,16 +245,24 @@ class JujuClient:
         with self.connlock:
             self.conn.do_close()
 
-    def receive(self, request_id):
+    def receive(self, request_id, timeout=None):
         """receives expected message.
         
         returns parsed response object.
 
+        if timeout is set, raises RequestTimeout after 'timeout' seconds
+        with no received message.
+
         """
         res = None
+        start_time = time.time()
         while res is None:
             with self.connlock:
                 res = self.conn.do_receive(request_id)
+            if res is None:
+                time.sleep(0.1)
+                if timeout and (time.time() - start_time > timeout):
+                    raise RequestTimeout(request_id)
 
         if 'Error' in res:
             raise ServerError(res['Error'], res)
@@ -258,7 +272,7 @@ class JujuClient:
         except:
             raise BadResponseError("Failed to parse response: {}".format(res))
 
-    def call(self, params):
+    def call(self, params, timeout=None):
         """ Get json data from juju api daemon.
 
         :params params: Additional params to be passed into request
@@ -266,17 +280,8 @@ class JujuClient:
         """
         with self.connlock:
             req_id = self.conn.do_send(params)
-        try:
-            rv = self.receive(req_id)
 
-        except UnknownRequestError as e:
-            msg = ("websocket client has no record of call. "
-                   "Retrying: {}".format(e))
-            log.debug(msg)
-            # indicates a likely disconnection, try again:
-            rv = self.call(params)
-
-        return rv
+        return self.receive(req_id, timeout)
 
     def info(self):
         """ Returns Juju environment state """
@@ -286,7 +291,8 @@ class JujuClient:
     def status(self):
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",
-                              Request="FullStatus"))
+                              Request="FullStatus"),
+                         timeout=60)
 
     def get_watcher(self):
         """ Returns watcher """
