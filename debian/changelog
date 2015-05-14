@@ -1,3 +1,9 @@
+macumba (0.6-0ubuntu1) trusty; urgency=medium
+
+  * Fix threaded execution
+
+ -- Adam Stokes <adam.stokes@ubuntu.com>  Thu, 14 May 2015 08:43:11 -0400
+
 macumba (0.5-0ubuntu1) utopic; urgency=medium
 
   * Fix annotations
