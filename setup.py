@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-VERSION = '0.6'
+VERSION = '2.0'
 
 _long_desc = "Macumba"
 with open('README.md', 'r') as fp:
