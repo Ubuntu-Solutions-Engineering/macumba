@@ -28,8 +28,8 @@ creds = {'Type': 'Admin',
          'Version': 2,
          'Request': 'Login',
          'RequestId': 1,
-         'Params': {'AuthTag': 'user-admin',
-                    'Password': None}}
+         'Params': {'auth-tag': 'user-admin',
+                    'credentials': None}}
 
 
 class MacumbaError(Exception):
@@ -151,6 +151,7 @@ class JujuWS(WebSocketClient):
         self.connect()
         self.open_done.wait()
         self.open_done.clear()
+        print(creds)
         rv = self.do_send(creds)
         return rv
 
@@ -202,7 +203,7 @@ class JujuClient:
         self.connlock = threading.RLock()
         with self.connlock:
             self.conn = JujuWS(url, password)
-        creds['Params']['Password'] = password
+        creds['Params']['credentials'] = password
 
     def _prepare_strparams(self, d):
         r = {}

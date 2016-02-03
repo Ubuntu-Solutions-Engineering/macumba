@@ -20,25 +20,27 @@ from macumba import JujuClient
 import yaml
 from glob import glob
 import os
+from code import interact
 
 juju_home = os.getenv("JUJU_HOME", "~/.juju")
-jenv_pat = os.path.expanduser(os.path.join(juju_home, "environments/*.jenv"))
-jenv_files = glob(jenv_pat)
-if len(jenv_files) == 0 or len(jenv_files) > 1:
-    print("found 0 or >1 .jenv files, will ask for IP and password")
+jenv_pat = os.path.expanduser(os.path.join(juju_home,
+                                           "models/cache.yaml"))
+if not os.path.isfile(jenv_pat):
     wss_ip = input("juju api IP (with port):")
     jpass = getpass("juju password : ")
 else:
-    env = yaml.load(open(jenv_files[0]))
-    wss_ip = env['state-servers'][0]
-    jpass = env['password']
+    env = yaml.load(open(jenv_pat))
+    uuid = env['server-user']['local']['server-uuid']
+    wss_ip = env['server-data'][uuid]['api-endpoints'][0]
+    jpass = env['server-data'][uuid]['identities']['admin']
 
-print('Connecting using wss ip ' + wss_ip)
-j = JujuClient(url='wss://' + wss_ip, password=jpass)
+url = os.path.join('wss://', wss_ip, 'model', uuid, 'api')
+print('Connecting using ' + url)
+j = JujuClient(url=url, password=jpass)
 
 j.login()
 
-from code import interact
+
 interact(banner="juju client logged in. Object is named 'j',"
          " so j.status() will fetch current status as a dict.",
          local=locals())
