@@ -1,5 +1,4 @@
-#
-# Copyright 2014 Canonical, Ltd.
+# Copyright 2014-2016 Canonical, Ltd.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,6 +26,7 @@ import time
 log = logging.getLogger('macumba')
 
 creds = {'Type': 'Admin',
+         'Version': 2,
          'Request': 'Login',
          'RequestId': 1,
          'Params': {'AuthTag': 'user-admin',
@@ -219,7 +219,7 @@ class JujuClient:
 
     def login(self):
         """Connect and log in to juju websocket endpoint.
-        
+
         block other threads until done.
         """
         with self.connlock:
@@ -247,7 +247,7 @@ class JujuClient:
 
     def receive(self, request_id, timeout=None):
         """receives expected message.
-        
+
         returns parsed response object.
 
         if timeout is set, raises RequestTimeout after 'timeout' seconds
