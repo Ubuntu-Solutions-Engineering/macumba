@@ -38,8 +38,8 @@ To deploy a charm
 
 # Copyright
 
-2014, 2015 Canonical, Ltd.
-2014, 2015 Adam Stokes <adam.stokes@ubuntu.com>
+* 2014-2016 Canonical, Ltd.
+* 2014-2016 Adam Stokes <adam.stokes@ubuntu.com>
 
 
 # License
