@@ -31,6 +31,12 @@ creds = {'Type': 'Admin',
          'Params': {'auth-tag': 'user-admin',
                     'credentials': None}}
 
+# https://github.com/juju/juju/blob/master/api/facadeversions.go
+FACADE_VERSIONS = {
+    'Client': 1,
+    'Service': 3
+}
+
 
 class MacumbaError(Exception):
 
@@ -286,17 +292,20 @@ class JujuClient:
     def info(self):
         """ Returns Juju environment state """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="EnvironmentInfo"))
 
     def status(self):
         """ Returns status of juju environment """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="FullStatus"),
                          timeout=60)
 
     def get_watcher(self):
         """ Returns watcher """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="WatchAll"))
 
     def get_watched_tasks(self, watcher_id):
@@ -308,34 +317,40 @@ class JujuClient:
     def add_charm(self, charm_url):
         """ Adds charm """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="AddCharm",
                               Params=dict(URL=charm_url)))
 
     def get_charm(self, charm_url):
         """ Get charm """
         return self.call(dict(Type='Client',
+                              Version=FACADE_VERSIONS['Client'],
                               Request='CharmInfo',
                               Params=dict(CharmURL=charm_url)))
 
     def get_env_constraints(self):
         """ Get environment constraints """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="GetEnvironmentConstraints"))
 
     def set_env_constraints(self, constraints):
         """ Set environment constraints """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="SetEnvironmentConstraints",
                               Params=constraints))
 
     def get_env_config(self):
         """ Get environment config """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="EnvironmentGet"))
 
     def set_env_config(self, config):
         """ Sets environment config variables """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="EnvironmentSet",
                               Params=dict(Config=config)))
 
@@ -359,6 +374,7 @@ class JujuClient:
     def add_machines(self, machines):
         """ Add machines """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="AddMachines",
                               Params=dict(MachineParams=machines)))
 
@@ -367,6 +383,7 @@ class JujuClient:
         if force:
             params["Force"] = True
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="DestroyMachines",
                               Params=params))
 
@@ -374,6 +391,7 @@ class JujuClient:
         """ Adds relation between units """
         try:
             rv = self.call(dict(Type="Client",
+                                Version=FACADE_VERSIONS['Client'],
                                 Request="AddRelation",
                                 Params=dict(Endpoints=[endpoint_a,
                                                        endpoint_b])))
@@ -389,6 +407,7 @@ class JujuClient:
     def remove_relation(self, endpoint_a, endpoint_b):
         """ Removes relation """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="DestroyRelaiton",
                               Params=dict(Endpoints=[endpoint_a,
                                                      endpoint_b])))
@@ -417,26 +436,30 @@ class JujuClient:
                 constraints)
         if machine_spec:
             params['ToMachineSpec'] = machine_spec
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceDeploy",
                               Params=dict(params)))
 
     def set_config(self, service_name, config_keys):
         """ Sets machine config """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceSet",
                               Params=dict(ServiceName=service_name,
                                           Options=config_keys)))
 
     def unset_config(self, service_name, config_keys):
         """ Unsets machine config """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceUnset",
                               Params=dict(ServiceName=service_name,
                                           Options=config_keys)))
 
     def set_charm(self, service_name, charm_url, force=0):
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceSetCharm",
                               Params=dict(ServiceName=service_name,
                                           CharmUrl=charm_url,
@@ -444,7 +467,8 @@ class JujuClient:
 
     def get_service(self, service_name):
         """ Get charm, config, constraits for srevice"""
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceGet",
                               Params=dict(ServiceName=service_name)))
 
@@ -455,13 +479,15 @@ class JujuClient:
 
     def get_constraints(self, service_name):
         """ Get service constraints """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="GetServiceConstraints",
                               Params=dict(ServiceName=service_name)))
 
     def set_constraints(self, service_name, constraints):
         """ Sets service level constraints """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="SetServiceConstraints",
                               Params=dict(ServiceName=service_name,
                                           Constraints=constraints)))
@@ -469,7 +495,8 @@ class JujuClient:
     def update_service(self, service_name, charm_url, force_charm_url=0,
                        min_units=1, settings={}, constraints={}):
         """ Update service """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="SetServiceConstraints",
                               Params=dict(ServiceName=service_name,
                                           CharmUrl=charm_url,
@@ -479,25 +506,29 @@ class JujuClient:
 
     def destroy_service(self, service_name):
         """ Destroy a service """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceDestroy",
                               Params=dict(ServiceName=service_name)))
 
     def expose(self, service_name):
         """ Expose a service """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceExpose",
                               Params=dict(ServiceName=service_name)))
 
     def unexpose(self, service_name):
         """ Unexpose service """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceUnexpose",
                               Params=dict(ServiceName=service_name)))
 
     def valid_relation_name(self, service_name):
         """ All possible relation names for service """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="ServiceCharmRelations",
                               Params=dict(ServiceName=service_name)))
 
@@ -515,19 +546,22 @@ class JujuClient:
         if machine_spec:
             params['ToMachineSpec'] = machine_spec
 
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="AddServiceUnits",
                               Params=dict(params)))
 
     def remove_unit(self, unit_names):
         """ Removes unit """
-        return self.call(dict(Type="Client",
+        return self.call(dict(Type="Service",
+                              Version=FACADE_VERSIONS['Service'],
                               Request="DestroyServiceUnits",
                               Params=dict(UnitNames=unit_names)))
 
     def resolved(self, unit_name, retry=0):
         """ Resolved """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="Resolved",
                               Params=dict(UnitName=unit_name,
                                           Retry=retry)))
@@ -535,6 +569,7 @@ class JujuClient:
     def get_public_address(self, target):
         """ Gets public address of instance """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="PublicAddress",
                               Params=dict(Target=target)))
 
@@ -543,6 +578,7 @@ class JujuClient:
         :param dict annotation: dict with string pairs.
         """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="SetAnnotations",
                               Params=dict(Tag="%s-%s" % (entity_type, entity),
                                           Pairs=annotation)))
@@ -550,6 +586,7 @@ class JujuClient:
     def get_annotations(self, entity, entity_type):
         """ Gets annotations """
         return self.call(dict(Type="Client",
+                              Version=FACADE_VERSIONS['Client'],
                               Request="GetAnnotations",
                               Params=dict(Tag="%s-%s" % (entity_type,
                                                          entity))))
