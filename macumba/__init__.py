@@ -18,7 +18,6 @@ import json
 import logging
 import requests
 from os import path
-from queue import Queue, Empty
 import pprint
 import threading
 import time
