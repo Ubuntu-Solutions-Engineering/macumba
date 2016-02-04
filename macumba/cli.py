@@ -14,15 +14,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from getpass import getpass
-
-from .v2 import JujuClient
-import yaml
 import os
+import yaml
 from code import interact
+
+juju_home = os.getenv("JUJU_HOME", "~/.juju")
+cache_yaml = os.path.expanduser(os.path.join(juju_home,
+                                             "models/cache.yaml"))
+
+if os.path.isfile(cache_yaml):
+    from .v2 import JujuClient  # noqa
+else:
+    from .v1 import JujuClient  # noqa
 
 
 def main():
-    juju_home = os.getenv("JUJU_HOME", "~/.juju")
+
     jenv_pat = os.path.expanduser(os.path.join(juju_home,
                                                "models/cache.yaml"))
     if not os.path.isfile(jenv_pat):
