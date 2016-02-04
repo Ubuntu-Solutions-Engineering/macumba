@@ -13,38 +13,64 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from getpass import getpass
 import os
+import sys
 import yaml
+import argparse
 from code import interact
 
-juju_home = os.getenv("JUJU_HOME", "~/.juju")
-cache_yaml = os.path.expanduser(os.path.join(juju_home,
-                                             "models/cache.yaml"))
 
-if os.path.isfile(cache_yaml):
-    from .v2 import JujuClient  # noqa
-else:
-    from .v1 import JujuClient  # noqa
+def parse_options(argv):
+    parser = argparse.ArgumentParser(description='Macumba Shell',
+                                     prog='macumba-shell')
+    parser.add_argument('--v1', action='store_true', dest='v1',
+                        help='Use Juju 1.x API')
+    parser.add_argument('--v2', action='store_true', dest='v2',
+                        help='Use Juju 2.x API')
+    parser.add_argument('-m', '--model', dest='model',
+                        help='The Environment(v1)/Model(v2) to connect to.')
+    return parser.parse_args(argv)
 
 
 def main():
+    juju_home = os.getenv("JUJU_HOME", "~/.juju")
+    opts = parse_options(sys.argv[1:])
+    if not opts.model:
+        raise Exception("Must choose a Environment/Model.")
+    if opts.v1:
+        from .v1 import JujuClient  # noqa
+        env = os.path.expanduser(
+            os.path.join(
+                juju_home,
+                "environments/{}.jenv".format(opts.model)))
+        if not os.path.isfile(env):
+            raise Exception("Unable to locate: {}".format(env))
+        env_yaml = yaml.load(open(env))
+        uuid = env_yaml['environ-uuid']
+        server = env_yaml['state-servers'][0]
+        password = env_yaml['password']
+        user = env_yaml['user']
+        url = os.path.join('wss://', server, 'environment', uuid, 'api')
 
-    jenv_pat = os.path.expanduser(os.path.join(juju_home,
-                                               "models/cache.yaml"))
-    if not os.path.isfile(jenv_pat):
-        wss_ip = input("juju api IP (with port):")
-        jpass = getpass("juju password : ")
+    elif opts.v2:
+        from .v2 import JujuClient  # noqa
+        env = os.path.expanduser(
+            os.path.join(
+                juju_home,
+                "models/cache.yaml"))
+        if not os.path.isfile(env):
+            raise Exception("Unable to locate: {}".format(env))
+
+        env = yaml.load(open(env))
+        uuid = env['server-user'][opts.model]['server-uuid']
+        server = env['server-data'][uuid]['api-endpoints'][0]
+        password = env['server-data'][uuid]['identities']['admin']
+        url = os.path.join('wss://', server, 'model', uuid, 'api')
     else:
-        env = yaml.load(open(jenv_pat))
-        uuid = env['server-user']['local']['server-uuid']
-        wss_ip = env['server-data'][uuid]['api-endpoints'][0]
-        jpass = env['server-data'][uuid]['identities']['admin']
+        raise Exception("Could not determine Juju API Version to use.")
 
-    url = os.path.join('wss://', wss_ip, 'model', uuid, 'api')
-    print('Connecting using ' + url)
-    j = JujuClient(url=url, password=jpass)
-
+    print('Connecting to {}'.format(url))
+    j = JujuClient(url=url, password=password)
     j.login()
 
     interact(banner="juju client logged in. Object is named 'j',"

@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 9),
                python3-setuptools,
                python3-ws4py,
                python3-yaml
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: https://github.com/Ubuntu-Solutions-Engineering/macumba
 X-Python3-Version: >= 3.4
 Vcs-Browser: https://github.com/Ubuntu-Solutions-Engineering/macumba
@@ -32,5 +32,6 @@ Depends: juju-core,
          python3-yaml,
          ${misc:Depends},
          ${python3:Depends}
-Description: Macumba
- Python 3 bindings for Juju
+Description: Python 3 bindings for Juju
+ Python 3 bindings for Juju that support both Juju 1.x and Juju 2.x
+ releases.
