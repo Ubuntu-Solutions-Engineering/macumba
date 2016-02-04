@@ -16,7 +16,6 @@
 import logging
 import requests
 from os import path
-import pprint
 import threading
 import time
 from .errors import (CharmNotFoundError,
@@ -108,15 +107,6 @@ def query_cs(charm):
         raise CharmNotFoundError("{type} {charm_id}".format(**rj))
 
     return r.json()
-
-
-class PrettyLog():
-
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __repr__(self):
-        return pprint.pformat(self.obj)
 
 
 class Jobs:

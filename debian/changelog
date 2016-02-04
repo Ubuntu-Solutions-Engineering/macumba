@@ -1,3 +1,9 @@
+macumba (0.7) xenial; urgency=medium
+
+  * Update for Juju 2.0
+
+ -- Adam Stokes <adam.stokes@ubuntu.com>  Wed, 03 Feb 2016 22:16:48 -0500
+
 macumba (0.6-0ubuntu1) trusty; urgency=medium
 
   * Fix threaded execution
