@@ -18,7 +18,6 @@ from getpass import getpass
 
 from macumba import JujuClient
 import yaml
-from glob import glob
 import os
 from code import interact
 
