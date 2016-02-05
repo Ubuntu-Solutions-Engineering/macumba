@@ -233,3 +233,19 @@ class JujuClient(Base):
                               Request="DestroyRelaiton",
                               Params=dict(Endpoints=[endpoint_a,
                                                      endpoint_b])))
+
+    def set_annotations(self, entity, entity_type, annotation):
+        """ Sets annotations.
+        :param dict annotation: dict with string pairs.
+        """
+        return self.call(dict(Type="Annotations",
+                              Request="Set",
+                              Params=dict(Tag="%s-%s" % (entity_type, entity),
+                                          Pairs=annotation)))
+
+    def get_annotations(self, entity, entity_type):
+        """ Gets annotations """
+        return self.call(dict(Type="Annotations",
+                              Request="Get",
+                              Params=dict(Tag="%s-%s" % (entity_type,
+                                                         entity))))
