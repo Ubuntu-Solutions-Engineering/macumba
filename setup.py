@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-VERSION = '0.1.0'
+VERSION = '0.9.1'
 
 _long_desc = "Macumba"
 with open('README.md', 'r') as fp:
