@@ -1,4 +1,4 @@
-Based(stole) a lot of the actual juju api calls off
+The v1 api code is based loosely off
 https://launchpad.net/python-jujuclient
 
 Thanks Kapil
