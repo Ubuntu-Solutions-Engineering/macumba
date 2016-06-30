@@ -71,7 +71,7 @@ _FACADE_VERSIONS = {
     "Upgrader":                     1,
     "UserManager":                  1,
     "VolumeAttachmentsWatcher":     2,
-    "Resources": 1
+    "resources": 1
 }
 
 
