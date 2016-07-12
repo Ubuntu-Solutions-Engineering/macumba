@@ -179,7 +179,7 @@ class JujuClient(Base):
     def remove_relation(self, endpoint_a, endpoint_b):
         """ Removes relation """
         return self.call(dict(Type="Client",
-                              Request="DestroyRelaiton",
+                              Request="DestroyRelation",
                               Params=dict(Endpoints=[endpoint_a,
                                                      endpoint_b])))
 
