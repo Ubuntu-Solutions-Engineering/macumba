@@ -1,5 +1,5 @@
-macumba (0.9.3) xenial; urgency=medium
+macumba (1.0.0) xenial; urgency=medium
 
-  * Update for Juju 2.0
+  * Juju 1.x and 2.x API
 
  -- Adam Stokes <adam.stokes@ubuntu.com>  Wed, 03 Feb 2016 22:16:48 -0500

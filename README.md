@@ -20,11 +20,14 @@ To deploy a charm
 >>> j.deploy('mysql', 'mysql')
 ```
 
+# Authors
+
+* Adam Stokes <adam.stokes@ubuntu.com>
+* Mike McCracken <mike.mccracken@canonical.com>
+
 # Copyright
 
 * 2014-2016 Canonical, Ltd.
-* 2014-2016 Adam Stokes <adam.stokes@ubuntu.com>
-
 
 # License
 
