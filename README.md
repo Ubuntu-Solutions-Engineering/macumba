@@ -1,24 +1,7 @@
 # macumba
 
-Python bindings for Juju 1.x and 2.x
+(DEPRECATED) Python bindings for Juju 1.x and 2.x. All juju related python code should be using https://github.com/juju/python-libjuju instead.
 
-# Usage
-
-## macumba-shell
-
-Running `macumba-shell` will allow you to work with the api directly.
-
-To get help with the library run
-
-```
->>> help(j)
-```
-
-To deploy a charm
-
-```
->>> j.deploy('mysql', 'mysql')
-```
 
 # Authors
 
